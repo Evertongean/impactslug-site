@@ -2,7 +2,7 @@ import { contactConfig, getWhatsappUrl } from "@/config/contact";
 
 function MessageIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-5">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="contact-icon">
       <path
         d="M4 5h16v11H9l-5 4V5Z"
         stroke="currentColor"
@@ -16,7 +16,7 @@ function MessageIcon() {
 
 function InstagramIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-5">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="contact-icon">
       <rect
         x="3.5"
         y="3.5"
@@ -34,7 +34,7 @@ function InstagramIcon() {
 
 function YouTubeIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-5">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="contact-icon">
       <path
         d="M21 7.4a2.8 2.8 0 0 0-2-2C17.2 5 12 5 12 5s-5.2 0-7 .4a2.8 2.8 0 0 0-2 2C2.5 9.2 2.5 12 2.5 12s0 2.8.5 4.6a2.8 2.8 0 0 0 2 2c1.8.4 7 .4 7 .4s5.2 0 7-.4a2.8 2.8 0 0 0 2-2c.5-1.8.5-4.6.5-4.6s0-2.8-.5-4.6Z"
         stroke="currentColor"
@@ -51,7 +51,7 @@ function ArrowUpRightIcon() {
       aria-hidden="true"
       viewBox="0 0 20 20"
       fill="none"
-      className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+      className="external-arrow"
     >
       <path
         d="M5 15 15 5M7 5h8v8"
@@ -84,43 +84,46 @@ export function Contact() {
     <section
       id="contato"
       aria-labelledby="contact-title"
-      className="scroll-mt-20 bg-surface lg:scroll-mt-24"
+      className="contact-section"
     >
-      <div className="site-container grid gap-12 py-20 md:gap-16 md:py-24 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)] lg:gap-16 lg:py-28 xl:gap-24 xl:py-32">
-        <div className="lg:self-center">
-          <div className="flex items-center gap-3">
-            <span className="h-px w-9 shrink-0 bg-accent" aria-hidden="true" />
-            <p className="font-mono text-[0.68rem] font-semibold tracking-[0.18em] text-accent uppercase sm:text-xs sm:tracking-[0.2em]">
+      <div className="site-container contact-layout">
+        <div className="contact-intro">
+          <div className="section-kicker">
+            <span
+              className="section-kicker-line section-kicker-line--fixed"
+              aria-hidden="true"
+            />
+            <p className="section-kicker-text section-kicker-text--compact">
               Fale com a Impact Slug
             </p>
           </div>
 
           <h2
             id="contact-title"
-            className="mt-7 max-w-4xl text-[clamp(2.35rem,9vw,4.75rem)] leading-[0.94] font-black tracking-[-0.05em] text-foreground uppercase lg:text-[clamp(3.4rem,4.4vw,5rem)]"
+            className="contact-title"
           >
             Vamos conversar
-            <span className="block text-accent">sobre seu projeto?</span>
+            <span className="contact-title-accent">sobre seu projeto?</span>
           </h2>
 
-          <p className="mt-7 max-w-2xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
+          <p className="contact-summary">
             Entre em contato com nossa equipe para tirar dúvidas sobre nossos
             serviços e solicitar atendimento.
           </p>
         </div>
 
-        <div className="flex flex-col justify-center lg:border-l lg:border-line lg:pl-12 xl:pl-16">
-          <div className="flex items-center gap-3 text-accent">
+        <div className="contact-panel">
+          <div className="contact-panel-label">
             <MessageIcon />
-            <p className="font-mono text-[0.68rem] font-semibold tracking-[0.18em] uppercase sm:text-xs">
+            <p className="contact-panel-label-text">
               Atendimento direto
             </p>
           </div>
 
-          <h3 className="mt-6 text-2xl leading-tight font-bold tracking-[-0.025em] text-foreground uppercase sm:text-3xl">
+          <h3 className="contact-panel-title">
             Atendimento pelo WhatsApp
           </h3>
-          <p className="mt-4 max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
+          <p className="contact-panel-description">
             Converse diretamente com nossa equipe para obter informações sobre
             nossos serviços.
           </p>
@@ -131,7 +134,7 @@ export function Contact() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Entrar em contato pelo WhatsApp (abre em nova aba)"
-              className="group mt-8 inline-flex min-h-13 w-full items-center justify-center gap-3 bg-accent px-6 text-sm font-bold text-background transition-colors duration-200 hover:bg-foreground sm:w-fit sm:px-7 motion-reduce:transition-none"
+              className="contact-primary-link interactive-arrow-parent"
             >
               Entrar em contato
               <ArrowUpRightIcon />
@@ -142,14 +145,14 @@ export function Contact() {
                 type="button"
                 disabled
                 aria-describedby="whatsapp-status"
-                className="mt-8 inline-flex min-h-13 w-full cursor-not-allowed items-center justify-center gap-3 bg-accent px-6 text-sm font-bold text-background sm:w-fit sm:px-7"
+                className="contact-primary-link contact-primary-link--disabled"
               >
                 Entrar em contato
                 <MessageIcon />
               </button>
               <p
                 id="whatsapp-status"
-                className="mt-3 font-mono text-[0.65rem] leading-5 tracking-[0.1em] text-muted uppercase"
+                className="contact-status"
               >
                 WhatsApp aguardando confirmação do número.
               </p>
@@ -158,9 +161,9 @@ export function Contact() {
 
           <nav
             aria-label="Outros canais da Impact Slug"
-            className="mt-10 border-t border-line pt-6"
+            className="contact-social-nav"
           >
-            <ul className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-7">
+            <ul className="contact-social-list">
               {socialLinks.map((link) => (
                 <li key={link.label}>
                   <a
@@ -168,7 +171,7 @@ export function Contact() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`${link.label} da Impact Slug (abre em nova aba)`}
-                    className="group inline-flex min-h-11 items-center gap-2.5 text-xs font-bold tracking-[0.12em] text-muted uppercase transition-colors duration-200 hover:text-accent motion-reduce:transition-none"
+                    className="contact-social-link interactive-arrow-parent"
                   >
                     {link.icon}
                     {link.label}

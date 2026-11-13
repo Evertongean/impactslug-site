@@ -1,7 +1,6 @@
 # Impact Slug
 
-Site institucional da Impact Slug, desenvolvido com Next.js, TypeScript e
-Tailwind CSS.
+Site institucional da Impact Slug, desenvolvido com Next.js, TypeScript e CSS3.
 
 ## Requisitos
 
@@ -32,8 +31,8 @@ A imagem original da marca utilizada pelo cabeçalho está em:
 public/images/logo-impact-slug.png
 ```
 
-O componente mantém a imagem dentro de uma área responsiva com `object-contain`,
-sem filtros, recortes ou alterações visuais.
+O componente mantém a imagem dentro de uma área responsiva com
+`object-fit: contain`, sem filtros, recortes ou alterações visuais.
 
 ## Deploy na Vercel
 

@@ -5,7 +5,7 @@ function MaintenanceIcon() {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="size-5"
+      className="about-icon"
       fill="none"
     >
       <path
@@ -24,7 +24,7 @@ function MachiningIcon() {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="size-5"
+      className="about-icon"
       fill="none"
     >
       <path
@@ -43,7 +43,7 @@ function ServiceIcon() {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="size-5"
+      className="about-icon"
       fill="none"
     >
       <path
@@ -62,40 +62,40 @@ export function About() {
     <section
       id="sobre"
       aria-labelledby="about-title"
-      className="scroll-mt-20 border-b border-line bg-surface lg:scroll-mt-24"
+      className="about-section"
     >
-      <div className="site-container grid items-stretch gap-12 py-20 md:gap-16 md:py-24 lg:grid-cols-2 lg:gap-12 lg:py-28 xl:gap-20 xl:py-32">
-        <figure className="relative min-h-[420px] overflow-hidden border border-line bg-background p-4 sm:min-h-[520px] sm:p-6 lg:min-h-[680px]">
-          <div className="relative h-full min-h-[386px] overflow-hidden border border-line bg-surface-muted sm:min-h-[470px] lg:min-h-[628px]">
+      <div className="site-container about-layout">
+        <figure className="about-visual-frame">
+          <div className="about-visual">
             <Image
               src="/images/imagens2usinagem.png"
               alt="Processo de usinagem de componentes metálicos em torno mecânico"
               fill
-              sizes="(max-width: 1023px) calc(100vw - 64px), 50vw"
-              className="object-cover"
+              sizes="(max-width: 639px) calc(100vw - 64px), (max-width: 767px) calc(100vw - 88px), (max-width: 1023px) calc(100vw - 112px), 50vw"
+              className="about-image"
             />
           </div>
         </figure>
 
-        <div className="flex flex-col justify-center lg:py-8">
-          <div className="flex items-center gap-3">
-            <span className="h-px w-9 bg-accent" aria-hidden="true" />
-            <p className="font-mono text-xs font-semibold tracking-[0.2em] text-accent uppercase">
+        <div className="about-content">
+          <div className="section-kicker">
+            <span className="section-kicker-line" aria-hidden="true" />
+            <p className="section-kicker-text">
               Quem somos
             </p>
           </div>
 
           <h2
             id="about-title"
-            className="mt-7 max-w-3xl text-[clamp(2.65rem,8.5vw,5.25rem)] leading-[0.91] font-black tracking-[-0.055em] text-foreground uppercase lg:text-[clamp(3.5rem,4.8vw,5.5rem)]"
+            className="about-title"
           >
             Conheça a
-            <span className="block">
-              <span className="text-accent">Impact</span> Slug.
+            <span className="about-title-line">
+              <span className="accent-text">Impact</span> Slug.
             </span>
           </h2>
 
-          <div className="mt-8 max-w-2xl space-y-5 text-base leading-7 text-muted sm:mt-10 sm:text-lg sm:leading-8">
+          <div className="about-description">
             <p>
               A Impact Slug atua na manutenção de carabinas PCP e no
               desenvolvimento de soluções de usinagem e personalização de
@@ -108,28 +108,28 @@ export function About() {
             </p>
           </div>
 
-          <ul className="mt-10 divide-y divide-line border-y border-line xl:grid xl:grid-cols-3 xl:divide-x xl:divide-y-0">
-            <li className="flex min-h-20 items-center gap-3 py-4 xl:px-4 xl:first:pl-0">
-              <span className="grid size-9 shrink-0 place-items-center border border-line text-accent">
+          <ul className="about-features">
+            <li className="about-feature">
+              <span className="about-feature-icon">
                 <MaintenanceIcon />
               </span>
-              <span className="text-sm leading-5 font-semibold text-foreground">
+              <span className="about-feature-label">
                 Manutenção especializada
               </span>
             </li>
-            <li className="flex min-h-20 items-center gap-3 py-4 xl:px-4">
-              <span className="grid size-9 shrink-0 place-items-center border border-line text-accent">
+            <li className="about-feature">
+              <span className="about-feature-icon">
                 <MachiningIcon />
               </span>
-              <span className="text-sm leading-5 font-semibold text-foreground">
+              <span className="about-feature-label">
                 Usinagem de componentes
               </span>
             </li>
-            <li className="flex min-h-20 items-center gap-3 py-4 xl:px-4 xl:last:pr-0">
-              <span className="grid size-9 shrink-0 place-items-center border border-line text-accent">
+            <li className="about-feature">
+              <span className="about-feature-icon">
                 <ServiceIcon />
               </span>
-              <span className="text-sm leading-5 font-semibold text-foreground">
+              <span className="about-feature-label">
                 Atendimento personalizado
               </span>
             </li>

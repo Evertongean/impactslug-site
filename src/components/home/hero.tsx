@@ -21,7 +21,7 @@ type HeroSlide = {
   description: string;
   image: string;
   imageAlt: string;
-  objectPosition?: string;
+  imageClassName?: string;
 };
 
 const heroSlides: readonly HeroSlide[] = [
@@ -35,7 +35,7 @@ const heroSlides: readonly HeroSlide[] = [
       "Experiência dedicada à manutenção especializada e aos trabalhos de usinagem para carabinas PCP.",
     image: "/images/hero/experiencia.png",
     imageAlt: "Carabina PCP com mira telescópica apresentada pela Impact Slug",
-    objectPosition: "center 58%",
+    imageClassName: "hero-image--history",
   },
   {
     identifier: "Nosso compromisso",
@@ -67,7 +67,7 @@ function ArrowUpRightIcon() {
     <svg
       aria-hidden="true"
       viewBox="0 0 20 20"
-      className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+      className="external-arrow"
       fill="none"
     >
       <path
@@ -81,52 +81,39 @@ function ArrowUpRightIcon() {
   );
 }
 
-const TRANSITION_DURATION = 200;
-
-type TransitionPhase = "idle" | "out" | "in";
+const TRANSITION_DURATION = 700;
+const AUTOPLAY_INTERVAL = 5000;
 
 export function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [transitionPhase, setTransitionPhase] =
-    useState<TransitionPhase>("idle");
+  const [outgoingIndex, setOutgoingIndex] = useState<number | null>(null);
   const [isPointerInteracting, setIsPointerInteracting] = useState(false);
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const indicatorRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activeIndexRef = useRef(0);
-  const pendingIndexRef = useRef(0);
-  const transitionPhaseRef = useRef<TransitionPhase>("idle");
+  const pendingIndexRef = useRef<number | null>(null);
+  const isTransitioningRef = useRef(false);
   const reduceMotionRef = useRef(false);
   const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const firstAnimationFrameRef = useRef<number | null>(null);
-  const secondAnimationFrameRef = useRef<number | null>(null);
+  const requestSlideRef = useRef<(index: number) => void>(() => undefined);
 
-  const clearTransitionHandles = useCallback(() => {
+  const clearTransitionTimer = useCallback(() => {
     if (transitionTimerRef.current) {
       clearTimeout(transitionTimerRef.current);
       transitionTimerRef.current = null;
-    }
-
-    if (firstAnimationFrameRef.current !== null) {
-      cancelAnimationFrame(firstAnimationFrameRef.current);
-      firstAnimationFrameRef.current = null;
-    }
-
-    if (secondAnimationFrameRef.current !== null) {
-      cancelAnimationFrame(secondAnimationFrameRef.current);
-      secondAnimationFrameRef.current = null;
     }
   }, []);
 
   const showSlideImmediately = useCallback(
     (index: number) => {
-      clearTransitionHandles();
+      clearTransitionTimer();
       activeIndexRef.current = index;
-      pendingIndexRef.current = index;
-      transitionPhaseRef.current = "idle";
+      pendingIndexRef.current = null;
+      isTransitioningRef.current = false;
       setActiveIndex(index);
-      setTransitionPhase("idle");
+      setOutgoingIndex(null);
     },
-    [clearTransitionHandles],
+    [clearTransitionTimer],
   );
 
   const requestSlide = useCallback(
@@ -139,44 +126,47 @@ export function Hero() {
         return;
       }
 
-      if (
-        transitionPhaseRef.current === "idle" &&
-        nextIndex === activeIndexRef.current
-      ) {
+      if (isTransitioningRef.current) {
+        pendingIndexRef.current =
+          nextIndex === activeIndexRef.current ? null : nextIndex;
         return;
       }
 
-      pendingIndexRef.current = nextIndex;
-
-      if (transitionPhaseRef.current === "out") {
+      if (nextIndex === activeIndexRef.current) {
         return;
       }
 
-      clearTransitionHandles();
-      transitionPhaseRef.current = "out";
-      setTransitionPhase("out");
+      clearTransitionTimer();
+      pendingIndexRef.current = null;
+      isTransitioningRef.current = true;
+
+      const previousIndex = activeIndexRef.current;
+      activeIndexRef.current = nextIndex;
+      setOutgoingIndex(previousIndex);
+      setActiveIndex(nextIndex);
 
       transitionTimerRef.current = setTimeout(() => {
-        const pendingIndex = pendingIndexRef.current;
+        const queuedIndex = pendingIndexRef.current;
 
-        activeIndexRef.current = pendingIndex;
-        setActiveIndex(pendingIndex);
-        transitionPhaseRef.current = "in";
-        setTransitionPhase("in");
+        pendingIndexRef.current = null;
+        isTransitioningRef.current = false;
         transitionTimerRef.current = null;
+        setOutgoingIndex(null);
 
-        firstAnimationFrameRef.current = requestAnimationFrame(() => {
-          firstAnimationFrameRef.current = null;
-          secondAnimationFrameRef.current = requestAnimationFrame(() => {
-            secondAnimationFrameRef.current = null;
-            transitionPhaseRef.current = "idle";
-            setTransitionPhase("idle");
-          });
-        });
+        if (
+          queuedIndex !== null &&
+          queuedIndex !== activeIndexRef.current
+        ) {
+          requestSlideRef.current(queuedIndex);
+        }
       }, TRANSITION_DURATION);
     },
-    [clearTransitionHandles, showSlideImmediately],
+    [clearTransitionTimer, showSlideImmediately],
   );
+
+  useEffect(() => {
+    requestSlideRef.current = requestSlide;
+  }, [requestSlide]);
 
   useEffect(() => {
     const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -193,11 +183,10 @@ export function Hero() {
       stopAutoplay();
       reduceMotionRef.current = motionPreference.matches;
 
-      if (
-        motionPreference.matches &&
-        transitionPhaseRef.current !== "idle"
-      ) {
-        showSlideImmediately(pendingIndexRef.current);
+      if (motionPreference.matches && isTransitioningRef.current) {
+        showSlideImmediately(
+          pendingIndexRef.current ?? activeIndexRef.current,
+        );
       }
 
       if (
@@ -207,10 +196,8 @@ export function Hero() {
         !isFocusWithin
       ) {
         intervalId = setInterval(() => {
-          if (transitionPhaseRef.current === "idle") {
-            requestSlide((activeIndexRef.current + 1) % heroSlides.length);
-          }
-        }, 6000);
+          requestSlide((activeIndexRef.current + 1) % heroSlides.length);
+        }, AUTOPLAY_INTERVAL);
       }
     }
 
@@ -225,7 +212,7 @@ export function Hero() {
     };
   }, [isFocusWithin, isPointerInteracting, requestSlide, showSlideImmediately]);
 
-  useEffect(() => clearTransitionHandles, [clearTransitionHandles]);
+  useEffect(() => clearTransitionTimer, [clearTransitionTimer]);
 
   function handleBlur(event: FocusEvent<HTMLDivElement>) {
     if (!event.currentTarget.contains(event.relatedTarget)) {
@@ -257,39 +244,39 @@ export function Hero() {
   }
 
   const activeSlide = heroSlides[activeIndex];
-  const isSlideVisible = transitionPhase === "idle";
 
   return (
     <section
       id="inicio"
       aria-label="Destaques da Impact Slug"
       aria-roledescription="carrossel"
-      className="scroll-mt-20 overflow-hidden border-b border-line bg-background lg:scroll-mt-24"
+      className="hero-section"
     >
       <div
-        className="site-container flex flex-col justify-center py-8 sm:py-9 md:py-10 lg:min-h-[500px] xl:min-h-[540px] lg:py-6 xl:py-6"
+        className="hero-primary hero-container"
         onPointerEnter={() => setIsPointerInteracting(true)}
         onPointerLeave={() => setIsPointerInteracting(false)}
         onFocusCapture={() => setIsFocusWithin(true)}
         onBlurCapture={handleBlur}
       >
-        <p className="sr-only" aria-live="polite" aria-atomic="true">
+        <p className="screen-reader-only" aria-live="polite" aria-atomic="true">
           Slide {activeIndex + 1} de {heroSlides.length}:{" "}
           {heroSlides[activeIndex].identifier}
         </p>
 
-        <div className="grid items-center gap-7 md:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.85fr)] lg:gap-10 xl:gap-14">
-          <div className="flex flex-col justify-center">
-            <div className="min-h-[13.5rem] sm:min-h-[14.5rem] lg:min-h-[clamp(13rem,11.67vw,14rem)]">
+        <div className="hero-layout">
+          <div className="hero-copy-column">
+            <div className="hero-slide-space">
               <div
                 key={activeSlide.identifier}
-                className={`transition-opacity duration-200 motion-reduce:transition-none ${
-                  isSlideVisible ? "opacity-100" : "opacity-0"
-                }`}
+                className="hero-slide"
               >
-                <div className="mb-3 flex items-center gap-3">
-                  <span className="h-px w-9 shrink-0 bg-accent" aria-hidden="true" />
-                  <p className="font-mono text-[0.68rem] font-semibold tracking-[0.2em] text-accent uppercase sm:text-xs">
+                <div className="hero-kicker">
+                  <span
+                    className="section-kicker-line section-kicker-line--fixed"
+                    aria-hidden="true"
+                  />
+                  <p className="hero-kicker-text">
                     {activeSlide.identifier}
                   </p>
                 </div>
@@ -298,13 +285,13 @@ export function Hero() {
                   aria-label={activeSlide.title
                     .map((line) => line.map((part) => part.text).join(""))
                     .join(" ")}
-                  className="max-w-3xl text-[clamp(2.15rem,9vw,3.6rem)] leading-[0.94] font-black tracking-[-0.05em] text-foreground uppercase lg:text-[clamp(2.6rem,3.05vw,3.55rem)]"
+                  className="hero-title"
                 >
                   {activeSlide.title.map((line, lineIndex) => (
-                    <span className="block" key={lineIndex}>
+                    <span className="hero-title-line" key={lineIndex}>
                       {line.map((part) => (
                         <span
-                          className={part.accent ? "text-accent" : undefined}
+                          className={part.accent ? "accent-text" : undefined}
                           key={part.text}
                         >
                           {part.text}
@@ -314,7 +301,7 @@ export function Hero() {
                   ))}
                 </h1>
 
-                <p className="mt-3 max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-7">
+                <p className="hero-description">
                   {activeSlide.description}
                 </p>
               </div>
@@ -322,31 +309,46 @@ export function Hero() {
 
             <a
               href="#galeria"
-              className="group mt-5 inline-flex min-h-12 w-fit items-center justify-center gap-3 bg-accent px-6 text-sm font-bold text-background transition-colors duration-200 hover:bg-foreground sm:px-7 lg:mt-4 motion-reduce:transition-none"
+              className="hero-cta interactive-arrow-parent"
             >
               VER NOSSOS TRABALHOS
               <ArrowUpRightIcon />
             </a>
           </div>
 
-          <div className="relative grid aspect-[4/3] w-full overflow-hidden rounded-sm bg-surface sm:aspect-[16/10] lg:aspect-[16/9] lg:max-w-[500px] lg:justify-self-end">
-            <Image
-              key={activeSlide.image}
-              src={activeSlide.image}
-              alt={activeSlide.imageAlt}
-              fill
-              preload={activeIndex === 0}
-              sizes="(max-width: 1023px) calc(100vw - 32px), 500px"
-              style={{ objectPosition: activeSlide.objectPosition }}
-              className={`object-cover transition-opacity duration-200 motion-reduce:transition-none ${
-                isSlideVisible ? "opacity-100" : "opacity-0"
-              }`}
-            />
+          <div className="hero-media">
+            {heroSlides.map((slide, index) => {
+              let imageStateClass = "hero-carousel-image--hidden";
+
+              if (index === activeIndex) {
+                imageStateClass =
+                  outgoingIndex === null
+                    ? "hero-carousel-image--current"
+                    : "hero-carousel-image--entering";
+              } else if (index === outgoingIndex) {
+                imageStateClass = "hero-carousel-image--leaving";
+              }
+
+              return (
+                <Image
+                  key={slide.image}
+                  src={slide.image}
+                  alt={index === activeIndex ? slide.imageAlt : ""}
+                  aria-hidden={index !== activeIndex}
+                  fill
+                  preload={index === 0}
+                  sizes="(max-width: 639px) calc(100vw - 32px), (max-width: 767px) calc(100vw - 40px), (max-width: 1023px) and (orientation: landscape) 45vw, (max-width: 1023px) calc(100vw - 64px), 500px"
+                  className={`hero-carousel-image ${
+                    slide.imageClassName ?? ""
+                  } ${imageStateClass}`}
+                />
+              );
+            })}
           </div>
         </div>
 
         <div
-          className="mt-2 flex items-center justify-center gap-1 sm:mt-3"
+          className="hero-indicators"
           role="group"
           aria-label="Selecionar destaque"
         >
@@ -364,14 +366,14 @@ export function Hero() {
                 aria-current={isActive ? "true" : undefined}
                 onClick={() => requestSlide(index)}
                 onKeyDown={(event) => handleIndicatorKeyDown(event, index)}
-                className="group grid size-11 place-items-center rounded-full"
+                className="hero-indicator"
               >
                 <span
                   aria-hidden="true"
-                  className={`block size-2.5 rounded-full transition-[background-color,transform] duration-200 motion-reduce:transform-none motion-reduce:transition-none ${
+                  className={`hero-indicator-dot ${
                     isActive
-                      ? "scale-125 bg-accent"
-                      : "bg-muted/60 group-hover:bg-accent/70"
+                      ? "hero-indicator-dot--active"
+                      : "hero-indicator-dot--inactive"
                   }`}
                 />
               </button>

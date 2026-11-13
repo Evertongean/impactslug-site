@@ -8,19 +8,21 @@ export const metadata: Metadata = {
     template: "%s | Impact Slug",
   },
   description:
-    "Manutenção especializada e soluções de usinagem para carabinas PCP.",
+    "Manutenção especializada, usinagem e fabricação de chumbos Slug para carabinas PCP.",
   applicationName: "Impact Slug",
   keywords: [
     "Impact Slug",
     "carabinas PCP",
     "manutenção de carabinas",
     "usinagem",
+    "chumbos Slug",
+    "Slug para PCP",
     "personalização de componentes",
   ],
   openGraph: {
     title: "Impact Slug | Precisão em cada detalhe",
     description:
-      "Manutenção especializada e soluções de usinagem para carabinas PCP.",
+      "Manutenção especializada, usinagem e fabricação de chumbos Slug para carabinas PCP.",
     locale: "pt_BR",
     siteName: "Impact Slug",
     type: "website",
@@ -39,7 +41,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
+      <body className="site-body">
         {children}
       </body>
     </html>
