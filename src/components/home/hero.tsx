@@ -57,7 +57,7 @@ const heroSlides: readonly HeroSlide[] = [
     ],
     description:
       "Conheça os componentes e trabalhos realizados pela Impact Slug.",
-    image: "/images/hero/usinagem.png",
+    image: "/images/hero/Operação de Torno Mecânico Verde.png",
     imageAlt: "Torno trabalhando em um componente metálico na oficina",
   },
 ];
@@ -86,7 +86,6 @@ const AUTOPLAY_INTERVAL = 5000;
 
 export function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [outgoingIndex, setOutgoingIndex] = useState<number | null>(null);
   const [isPointerInteracting, setIsPointerInteracting] = useState(false);
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const indicatorRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -111,7 +110,6 @@ export function Hero() {
       pendingIndexRef.current = null;
       isTransitioningRef.current = false;
       setActiveIndex(index);
-      setOutgoingIndex(null);
     },
     [clearTransitionTimer],
   );
@@ -140,9 +138,7 @@ export function Hero() {
       pendingIndexRef.current = null;
       isTransitioningRef.current = true;
 
-      const previousIndex = activeIndexRef.current;
       activeIndexRef.current = nextIndex;
-      setOutgoingIndex(previousIndex);
       setActiveIndex(nextIndex);
 
       transitionTimerRef.current = setTimeout(() => {
@@ -151,7 +147,6 @@ export function Hero() {
         pendingIndexRef.current = null;
         isTransitioningRef.current = false;
         transitionTimerRef.current = null;
-        setOutgoingIndex(null);
 
         if (
           queuedIndex !== null &&
@@ -318,30 +313,32 @@ export function Hero() {
 
           <div className="hero-media">
             {heroSlides.map((slide, index) => {
-              let imageStateClass = "hero-carousel-image--hidden";
+              const nextIndex = (activeIndex + 1) % heroSlides.length;
+              let positionClass = "hero-carousel-item--previous";
 
               if (index === activeIndex) {
-                imageStateClass =
-                  outgoingIndex === null
-                    ? "hero-carousel-image--current"
-                    : "hero-carousel-image--entering";
-              } else if (index === outgoingIndex) {
-                imageStateClass = "hero-carousel-image--leaving";
+                positionClass = "hero-carousel-item--current";
+              } else if (index === nextIndex) {
+                positionClass = "hero-carousel-item--next";
               }
 
               return (
-                <Image
+                <div
                   key={slide.image}
-                  src={slide.image}
-                  alt={index === activeIndex ? slide.imageAlt : ""}
                   aria-hidden={index !== activeIndex}
-                  fill
-                  preload={index === 0}
-                  sizes="(max-width: 639px) calc(100vw - 32px), (max-width: 767px) calc(100vw - 40px), (max-width: 1023px) and (orientation: landscape) 45vw, (max-width: 1023px) calc(100vw - 64px), 500px"
-                  className={`hero-carousel-image ${
-                    slide.imageClassName ?? ""
-                  } ${imageStateClass}`}
-                />
+                  className={`hero-carousel-item ${positionClass}`}
+                >
+                  <Image
+                    src={slide.image}
+                    alt={index === activeIndex ? slide.imageAlt : ""}
+                    fill
+                    preload={index === 0}
+                    sizes="(max-width: 639px) 76vw, (max-width: 767px) 72vw, (max-width: 1023px) and (orientation: landscape) 34vw, (max-width: 1023px) 68vw, 460px"
+                    className={`hero-carousel-image ${
+                      slide.imageClassName ?? ""
+                    }`}
+                  />
+                </div>
               );
             })}
           </div>
