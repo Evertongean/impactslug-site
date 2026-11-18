@@ -435,9 +435,12 @@ a:focus-visible {
   min-height: 13.5rem;
 }
 
+.hero-slide {
+  animation: hero-copy-reveal 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .hero-kicker {
   margin-bottom: 0.75rem;
-  animation: hero-kicker-reveal 420ms ease-out both;
 }
 
 .hero-kicker-text {
@@ -453,7 +456,6 @@ a:focus-visible {
   letter-spacing: -0.05em;
   text-transform: uppercase;
   margin-top: 0;
-  animation: hero-title-reveal 520ms ease-out 50ms both;
 }
 
 .hero-title-line {
@@ -466,7 +468,6 @@ a:focus-visible {
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.75rem;
-  animation: hero-description-reveal 520ms ease-out 180ms both;
 }
 
 .hero-cta {
@@ -515,29 +516,41 @@ a:focus-visible {
   border-radius: 0.25rem;
   box-shadow: 0 1.5rem 3.5rem rgb(0 0 0 / 38%);
   backface-visibility: hidden;
-  transition:
-    transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 700ms ease-in-out,
-    filter 700ms ease-in-out;
-  will-change: transform, opacity, filter;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }
 
 .hero-carousel-image {
   object-fit: cover;
+  transition:
+    filter 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: filter, transform;
 }
 
 .hero-carousel-item--current {
   z-index: 3;
-  opacity: 1;
-  filter: blur(0);
   transform: translate3d(-50%, -50%, 0) scale(1);
 }
 
 .hero-carousel-item--next,
 .hero-carousel-item--previous {
   z-index: 1;
-  opacity: 0.5;
-  filter: blur(3px);
+}
+
+.hero-carousel-item--wrapping {
+  z-index: 0;
+}
+
+.hero-carousel-item--current .hero-carousel-image {
+  filter: brightness(1) blur(0);
+  transform: scale(1);
+}
+
+.hero-carousel-item--next .hero-carousel-image,
+.hero-carousel-item--previous .hero-carousel-image {
+  filter: brightness(0.58) blur(1.75px);
+  transform: scale(1.015);
 }
 
 .hero-carousel-item--next {
@@ -546,7 +559,7 @@ a:focus-visible {
       -50%,
       0
     )
-    scale(0.82);
+    scale(0.86) rotate(-1deg);
 }
 
 .hero-carousel-item--previous {
@@ -555,7 +568,7 @@ a:focus-visible {
       -50%,
       0
     )
-    scale(0.82);
+    scale(0.86) rotate(1deg);
 }
 
 .hero-image--history {
@@ -1638,34 +1651,10 @@ a:focus-visible {
   transform: translate(0.125rem, -0.125rem);
 }
 
-@keyframes hero-kicker-reveal {
+@keyframes hero-copy-reveal {
   from {
-    opacity: 0;
-    transform: translate3d(0, 0.375rem, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes hero-title-reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 0.875rem, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes hero-description-reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 0.625rem, 0);
+    opacity: 0.45;
+    transform: translate3d(0, 0.5rem, 0);
   }
 
   to {
@@ -1692,14 +1681,13 @@ a:focus-visible {
     transform: none !important;
   }
 
-  .hero-kicker,
-  .hero-title,
-  .hero-description {
+  .hero-slide {
     animation: none !important;
     transform: none !important;
   }
 
-  .hero-carousel-item {
+  .hero-carousel-item,
+  .hero-carousel-image {
     transition: none !important;
   }
 }
