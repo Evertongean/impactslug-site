@@ -19,6 +19,7 @@ type HeroSlide = {
   identifier: string;
   title: readonly (readonly HeroTitlePart[])[];
   description: string;
+  caption: string;
   image: string;
   imageAlt: string;
   imageClassName?: string;
@@ -33,6 +34,7 @@ const heroSlides: readonly HeroSlide[] = [
     ],
     description:
       "Experiência dedicada à manutenção especializada e aos trabalhos de usinagem para carabinas PCP.",
+    caption: "Manutenção especializada",
     image: "/images/hero/experiencia.png",
     imageAlt: "Carabina PCP com mira telescópica apresentada pela Impact Slug",
     imageClassName: "hero-image--history",
@@ -45,6 +47,7 @@ const heroSlides: readonly HeroSlide[] = [
     ],
     description:
       "Atenção ao acabamento, ao processo e à qualidade em cada trabalho realizado.",
+    caption: "Usinagem de precisão",
     image: "/images/hero/precisao.png",
     imageAlt: "Componentes metálicos durante um processo de usinagem de precisão",
   },
@@ -57,10 +60,29 @@ const heroSlides: readonly HeroSlide[] = [
     ],
     description:
       "Conheça os componentes e trabalhos realizados pela Impact Slug.",
+    caption: "Fabricação de componentes",
     image: "/images/hero/Operação de Torno Mecânico Verde.png",
     imageAlt: "Torno trabalhando em um componente metálico na oficina",
   },
 ];
+
+const heroDifferentials = [
+  {
+    number: "01",
+    title: "5+ anos",
+    description: "De experiência no mercado",
+  },
+  {
+    number: "02",
+    title: "Usinagem de precisão",
+    description: "Precisão e acabamento em cada detalhe",
+  },
+  {
+    number: "03",
+    title: "PCP & Slugs",
+    description: "Manutenção e fabricação especializada",
+  },
+] as const;
 
 function ArrowUpRightIcon() {
   return (
@@ -74,6 +96,25 @@ function ArrowUpRightIcon() {
         d="M5 15 15 5M7 5h8v8"
         stroke="currentColor"
         strokeWidth="1.5"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+    </svg>
+  );
+}
+
+function ArrowDownIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 16 24"
+      className="hero-scroll-icon"
+      fill="none"
+    >
+      <path
+        d="M8 1v20M2.5 15.5 8 21l5.5-5.5"
+        stroke="currentColor"
+        strokeWidth="1.25"
         strokeLinecap="square"
         strokeLinejoin="miter"
       />
@@ -322,75 +363,118 @@ export function Hero() {
             </a>
           </div>
 
-          <div className="hero-media">
-            {heroSlides.map((slide, index) => {
-              const nextIndex = (activeIndex + 1) % heroSlides.length;
-              let positionClass = "hero-carousel-item--previous";
+          <div className="hero-visual-column">
+            <div className="hero-media">
+              {heroSlides.map((slide, index) => {
+                const nextIndex = (activeIndex + 1) % heroSlides.length;
+                let positionClass = "hero-carousel-item--previous";
 
-              if (index === activeIndex) {
-                positionClass = "hero-carousel-item--current";
-              } else if (index === nextIndex) {
-                positionClass = "hero-carousel-item--next";
-              }
+                if (index === activeIndex) {
+                  positionClass = "hero-carousel-item--current";
+                } else if (index === nextIndex) {
+                  positionClass = "hero-carousel-item--next";
+                }
 
-              return (
-                <div
-                  key={slide.image}
-                  aria-hidden={index !== activeIndex}
-                  className={`hero-carousel-item ${positionClass}${
-                    index === wrappingIndex
-                      ? " hero-carousel-item--wrapping"
-                      : ""
-                  }`}
-                >
-                  <Image
-                    src={slide.image}
-                    alt={index === activeIndex ? slide.imageAlt : ""}
-                    fill
-                    preload={index === 0}
-                    sizes="(max-width: 639px) 76vw, (max-width: 767px) 72vw, (max-width: 1023px) and (orientation: landscape) 34vw, (max-width: 1023px) 68vw, 460px"
-                    className={`hero-carousel-image ${
-                      slide.imageClassName ?? ""
+                return (
+                  <div
+                    key={slide.image}
+                    aria-hidden={index !== activeIndex}
+                    className={`hero-carousel-item ${positionClass}${
+                      index === wrappingIndex
+                        ? " hero-carousel-item--wrapping"
+                        : ""
                     }`}
-                  />
-                </div>
-              );
-            })}
+                  >
+                    <Image
+                      src={slide.image}
+                      alt={index === activeIndex ? slide.imageAlt : ""}
+                      fill
+                      preload={index === 0}
+                      sizes="(max-width: 639px) 76vw, (max-width: 767px) 72vw, (max-width: 1023px) and (orientation: landscape) 38vw, (max-width: 1023px) 68vw, 540px"
+                      className={`hero-carousel-image ${
+                        slide.imageClassName ?? ""
+                      }`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="hero-media-footer">
+              <p
+                key={activeSlide.caption}
+                className="hero-media-caption"
+              >
+                {activeSlide.caption}
+              </p>
+
+              <div
+                className="hero-indicators"
+                role="group"
+                aria-label="Selecionar destaque"
+              >
+                {heroSlides.map((slide, index) => {
+                  const isActive = index === activeIndex;
+
+                  return (
+                    <button
+                      key={slide.identifier}
+                      ref={(element) => {
+                        indicatorRefs.current[index] = element;
+                      }}
+                      type="button"
+                      aria-label={`Exibir slide ${index + 1}: ${slide.identifier}`}
+                      aria-current={isActive ? "true" : undefined}
+                      onClick={() => requestSlide(index)}
+                      onKeyDown={(event) =>
+                        handleIndicatorKeyDown(event, index)
+                      }
+                      className="hero-indicator"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`hero-indicator-dot ${
+                          isActive
+                            ? "hero-indicator-dot--active"
+                            : "hero-indicator-dot--inactive"
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div
-          className="hero-indicators"
-          role="group"
-          aria-label="Selecionar destaque"
-        >
-          {heroSlides.map((slide, index) => {
-            const isActive = index === activeIndex;
+        <div className="hero-lower">
+          <div
+            className="hero-differentials"
+            aria-label="Diferenciais da Impact Slug"
+          >
+            {heroDifferentials.map((item) => (
+              <div className="hero-differential" key={item.number}>
+                <span className="hero-differential-number" aria-hidden="true">
+                  {item.number}
+                </span>
+                <div>
+                  <p className="hero-differential-title">{item.title}</p>
+                  <p className="hero-differential-description">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
 
-            return (
-              <button
-                key={slide.identifier}
-                ref={(element) => {
-                  indicatorRefs.current[index] = element;
-                }}
-                type="button"
-                aria-label={`Exibir slide ${index + 1}: ${slide.identifier}`}
-                aria-current={isActive ? "true" : undefined}
-                onClick={() => requestSlide(index)}
-                onKeyDown={(event) => handleIndicatorKeyDown(event, index)}
-                className="hero-indicator"
-              >
-                <span
-                  aria-hidden="true"
-                  className={`hero-indicator-dot ${
-                    isActive
-                      ? "hero-indicator-dot--active"
-                      : "hero-indicator-dot--inactive"
-                  }`}
-                />
-              </button>
-            );
-          })}
+          <a
+            href="#servicos"
+            className="hero-scroll-cue"
+            aria-label="Rolar para Nossas Especialidades"
+          >
+            <span>Role para explorar</span>
+            <ArrowDownIcon />
+          </a>
         </div>
       </div>
     </section>
