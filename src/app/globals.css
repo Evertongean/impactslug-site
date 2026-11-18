@@ -491,54 +491,71 @@ a:focus-visible {
 }
 
 .hero-media {
+  --hero-card-height: 88%;
+  --hero-card-width: 76%;
+  --hero-side-shift: 44%;
+
   position: relative;
-  display: grid;
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 3;
   overflow: hidden;
   isolation: isolate;
-  background: var(--surface);
-  border-radius: 0.25rem;
+}
 
+.hero-carousel-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--hero-card-width);
+  height: var(--hero-card-height);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid rgb(245 245 245 / 10%);
+  border-radius: 0.25rem;
+  box-shadow: 0 1.5rem 3.5rem rgb(0 0 0 / 38%);
+  backface-visibility: hidden;
+  transition:
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 700ms ease-in-out,
+    filter 700ms ease-in-out;
+  will-change: transform, opacity, filter;
 }
 
 .hero-carousel-image {
   object-fit: cover;
-  backface-visibility: hidden;
 }
 
-.hero-carousel-image--hidden {
-  z-index: 0;
-  visibility: hidden;
-  opacity: 0;
-  transform: translate3d(-100%, 0, 0);
-}
-
-.hero-carousel-image--current {
-  z-index: 1;
-  visibility: visible;
+.hero-carousel-item--current {
+  z-index: 3;
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+  transform: translate3d(-50%, -50%, 0) scale(1);
 }
 
-.hero-carousel-image--entering,
-.hero-carousel-image--leaving {
-  visibility: visible;
-  will-change: transform, opacity;
-  animation-duration: 700ms;
-  animation-timing-function: ease-in-out;
-  animation-fill-mode: both;
-}
-
-.hero-carousel-image--entering {
-  z-index: 2;
-  animation-name: hero-image-enter;
-}
-
-.hero-carousel-image--leaving {
+.hero-carousel-item--next,
+.hero-carousel-item--previous {
   z-index: 1;
-  animation-name: hero-image-leave;
+  opacity: 0.5;
+  filter: blur(3px);
+}
+
+.hero-carousel-item--next {
+  transform: translate3d(
+      calc(-50% - var(--hero-side-shift)),
+      -50%,
+      0
+    )
+    scale(0.82);
+}
+
+.hero-carousel-item--previous {
+  transform: translate3d(
+      calc(-50% + var(--hero-side-shift)),
+      -50%,
+      0
+    )
+    scale(0.82);
 }
 
 .hero-image--history {
@@ -1621,30 +1638,6 @@ a:focus-visible {
   transform: translate(0.125rem, -0.125rem);
 }
 
-@keyframes hero-image-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(-100%, 0, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes hero-image-leave {
-  from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-
-  to {
-    opacity: 0;
-    transform: translate3d(100%, 0, 0);
-  }
-}
-
 @keyframes hero-kicker-reveal {
   from {
     opacity: 0;
@@ -1699,12 +1692,15 @@ a:focus-visible {
     transform: none !important;
   }
 
-  .hero-carousel-image,
   .hero-kicker,
   .hero-title,
   .hero-description {
     animation: none !important;
     transform: none !important;
+  }
+
+  .hero-carousel-item {
+    transition: none !important;
   }
 }
 
@@ -1780,6 +1776,8 @@ a:focus-visible {
   }
 
   .hero-media {
+    --hero-card-width: 72%;
+
     aspect-ratio: 16 / 10;
   }
 
@@ -1967,6 +1965,10 @@ a:focus-visible {
   }
 
   .hero-media {
+    --hero-card-height: 86%;
+    --hero-card-width: 74%;
+    --hero-side-shift: 42%;
+
     align-self: stretch;
     aspect-ratio: 4 / 3;
   }
@@ -2067,7 +2069,11 @@ a:focus-visible {
   }
 
   .hero-media {
-    max-width: 500px;
+    --hero-card-height: 92%;
+    --hero-card-width: 76%;
+    --hero-side-shift: 44%;
+
+    max-width: 620px;
     justify-self: end;
     aspect-ratio: auto;
   }
