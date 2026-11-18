@@ -86,6 +86,7 @@ const AUTOPLAY_INTERVAL = 5000;
 
 export function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [wrappingIndex, setWrappingIndex] = useState<number | null>(null);
   const [isPointerInteracting, setIsPointerInteracting] = useState(false);
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const indicatorRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -110,6 +111,7 @@ export function Hero() {
       pendingIndexRef.current = null;
       isTransitioningRef.current = false;
       setActiveIndex(index);
+      setWrappingIndex(null);
     },
     [clearTransitionTimer],
   );
@@ -138,7 +140,15 @@ export function Hero() {
       pendingIndexRef.current = null;
       isTransitioningRef.current = true;
 
+      const previousIndex = activeIndexRef.current;
+      const isMovingForward =
+        nextIndex === (previousIndex + 1) % heroSlides.length;
+      const indexMovingBehind = isMovingForward
+        ? (previousIndex - 1 + heroSlides.length) % heroSlides.length
+        : (previousIndex + 1) % heroSlides.length;
+
       activeIndexRef.current = nextIndex;
+      setWrappingIndex(indexMovingBehind);
       setActiveIndex(nextIndex);
 
       transitionTimerRef.current = setTimeout(() => {
@@ -147,6 +157,7 @@ export function Hero() {
         pendingIndexRef.current = null;
         isTransitioningRef.current = false;
         transitionTimerRef.current = null;
+        setWrappingIndex(null);
 
         if (
           queuedIndex !== null &&
@@ -326,7 +337,11 @@ export function Hero() {
                 <div
                   key={slide.image}
                   aria-hidden={index !== activeIndex}
-                  className={`hero-carousel-item ${positionClass}`}
+                  className={`hero-carousel-item ${positionClass}${
+                    index === wrappingIndex
+                      ? " hero-carousel-item--wrapping"
+                      : ""
+                  }`}
                 >
                   <Image
                     src={slide.image}
