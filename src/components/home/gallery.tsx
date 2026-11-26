@@ -1,4 +1,13 @@
+"use client";
+
 import Image from "next/image";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 
 type GalleryItem = {
   number: string;
@@ -6,24 +15,28 @@ type GalleryItem = {
   alt: string;
   fileName: string;
   src: string | null;
-  featured?: boolean;
+  orientation: "portrait" | "landscape";
+  imageClassName?: string;
 };
 
 const galleryItems = [
   {
     number: "01",
     label: "Componentes usinados",
-    alt: "Componentes metálicos usinados pela Impact Slug",
-    fileName: "componentes-usinados.jpg",
-    src: null,
-    featured: true,
+    alt: "Operador realizando o acabamento de um componente metálico usinado",
+    fileName: "componentes-usinados.png",
+    src: "/images/componentes-usinados.png",
+    orientation: "landscape",
+    imageClassName: "gallery-card-image--components",
   },
   {
     number: "02",
     label: "Acabamento e precisão",
-    alt: "Peças metálicas de precisão produzidas pela Impact Slug",
-    fileName: "pecas-de-precisao.jpg",
-    src: null,
+    alt: "Técnico verificando a pressão de um componente com um manômetro",
+    fileName: "manuntenção.png",
+    src: "/images/manuntenção.png",
+    orientation: "portrait",
+    imageClassName: "gallery-card-image--finishing",
   },
   {
     number: "03",
@@ -31,8 +44,30 @@ const galleryItems = [
     alt: "Torno trabalhando em um componente metálico durante o processo de usinagem",
     fileName: "segundaimg-usinagem.png",
     src: "/images/segundaimg-usinagem.png",
+    orientation: "landscape",
+    imageClassName: "gallery-card-image--workshop",
+  },
+  {
+    number: "04",
+    label: "Processo de fabricação",
+    alt: "Operador fabricando chumbos em uma prensa manual",
+    fileName: "fabricar-chumbo.jpeg",
+    src: "/images/fabricar-chumbo.jpeg",
+    orientation: "portrait",
+    imageClassName: "gallery-card-image--manufacturing",
+  },
+  {
+    number: "05",
+    label: "Controle de qualidade",
+    alt: "Chumbos sendo conferidos em uma balança de precisão",
+    fileName: "chumbo-balança.jpeg",
+    src: "/images/chumbo-balança.jpeg",
+    orientation: "portrait",
+    imageClassName: "gallery-card-image--quality-control",
   },
 ] satisfies readonly GalleryItem[];
+
+type GalleryPosition = "current" | "previous" | "next" | "hidden";
 
 function GalleryPlaceholderIcon() {
   return (
@@ -82,44 +117,73 @@ function GalleryPlaceholder({ fileName }: Pick<GalleryItem, "fileName">) {
   );
 }
 
-function GalleryCard({ item }: { item: GalleryItem }) {
-  const sizeClass = item.featured
-    ? "gallery-card--featured"
-    : "gallery-card--standard";
-
+function GalleryArrowIcon({ direction }: { direction: "left" | "right" }) {
   return (
-    <figure
-      className={`gallery-card ${sizeClass}`}
-    >
-      {item.src ? (
-        <Image
-          src={item.src}
-          alt={item.alt}
-          fill
-          sizes={
-            item.featured
-              ? "(max-width: 767px) calc(100vw - 32px), 60vw"
-              : "(max-width: 767px) calc(100vw - 32px), 40vw"
-          }
-          className="gallery-card-image"
-        />
-      ) : (
-        <GalleryPlaceholder fileName={item.fileName} />
-      )}
-
-      <figcaption className="gallery-card-caption">
-        <span className="gallery-card-label">
-          {item.label}
-        </span>
-        <span className="gallery-card-number" aria-hidden="true">
-          {item.number}
-        </span>
-      </figcaption>
-    </figure>
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path
+        d={direction === "left" ? "m15 5-7 7 7 7" : "m9 5 7 7-7 7"}
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+    </svg>
   );
 }
 
 export function Gallery() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const swipeStartX = useRef<number | null>(null);
+
+  const showPrevious = useCallback(() => {
+    setActiveIndex((current) =>
+      (current - 1 + galleryItems.length) % galleryItems.length
+    );
+  }, []);
+
+  const showNext = useCallback(() => {
+    setActiveIndex((current) => (current + 1) % galleryItems.length);
+  }, []);
+
+  const getPosition = (index: number): GalleryPosition => {
+    const previousIndex =
+      (activeIndex - 1 + galleryItems.length) % galleryItems.length;
+    const nextIndex = (activeIndex + 1) % galleryItems.length;
+
+    if (index === activeIndex) return "current";
+    if (index === previousIndex) return "previous";
+    if (index === nextIndex) return "next";
+    return "hidden";
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      showPrevious();
+    }
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      showNext();
+    }
+  };
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    swipeStartX.current = event.clientX;
+  };
+
+  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    if (swipeStartX.current === null) return;
+
+    const distance = event.clientX - swipeStartX.current;
+    swipeStartX.current = null;
+
+    if (Math.abs(distance) < 45) return;
+    if (distance > 0) showPrevious();
+    else showNext();
+  };
+
   return (
     <section
       id="galeria"
@@ -152,10 +216,96 @@ export function Gallery() {
 
         </div>
 
-        <div className="gallery-grid">
-          {galleryItems.map((item) => (
-            <GalleryCard key={item.number} item={item} />
-          ))}
+        <div
+          className="gallery-carousel"
+          role="region"
+          aria-roledescription="carrossel"
+          aria-label="Trabalhos realizados pela Impact Slug"
+        >
+          <p className="screen-reader-only" aria-live="polite">
+            Slide {activeIndex + 1} de {galleryItems.length}: {galleryItems[activeIndex].label}
+          </p>
+
+          <div
+            className="gallery-carousel-stage"
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={() => {
+              swipeStartX.current = null;
+            }}
+          >
+            {galleryItems.map((item, index) => {
+              const position = getPosition(index);
+              const isActive = position === "current";
+              const imageSizes = item.orientation === "portrait"
+                ? "(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) 48vw, 420px"
+                : "(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) 72vw, 760px";
+
+              return (
+                <figure
+                  key={item.number}
+                  aria-hidden={!isActive}
+                  className={`gallery-carousel-slide gallery-carousel-slide--${item.orientation} gallery-carousel-slide--${position}`}
+                >
+                  <div className="gallery-carousel-media">
+                    {item.src ? (
+                      <Image
+                        src={item.src}
+                        alt={isActive ? item.alt : ""}
+                        fill
+                        sizes={imageSizes}
+                        loading={position === "hidden" ? "lazy" : "eager"}
+                        className={`gallery-carousel-image ${item.imageClassName ?? ""}`}
+                      />
+                    ) : (
+                      <GalleryPlaceholder fileName={item.fileName} />
+                    )}
+                  </div>
+
+                  <figcaption className="gallery-carousel-caption">
+                    <span className="gallery-carousel-label">{item.label}</span>
+                    <span className="gallery-carousel-number" aria-hidden="true">
+                      {item.number}
+                    </span>
+                  </figcaption>
+                </figure>
+              );
+            })}
+
+            <button
+              type="button"
+              className="gallery-carousel-arrow gallery-carousel-arrow--previous"
+              aria-label="Exibir trabalho anterior"
+              onClick={showPrevious}
+            >
+              <GalleryArrowIcon direction="left" />
+            </button>
+            <button
+              type="button"
+              className="gallery-carousel-arrow gallery-carousel-arrow--next"
+              aria-label="Exibir próximo trabalho"
+              onClick={showNext}
+            >
+              <GalleryArrowIcon direction="right" />
+            </button>
+          </div>
+
+          <div className="gallery-carousel-indicators" aria-label="Selecionar trabalho">
+            {galleryItems.map((item, index) => (
+              <button
+                key={item.number}
+                type="button"
+                className={`gallery-carousel-indicator${index === activeIndex ? " gallery-carousel-indicator--active" : ""}`}
+                aria-label={`Exibir slide ${index + 1}: ${item.label}`}
+                aria-current={index === activeIndex ? "true" : undefined}
+                onClick={() => setActiveIndex(index)}
+              >
+                <span />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </section>

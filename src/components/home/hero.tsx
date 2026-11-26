@@ -35,8 +35,8 @@ const heroSlides: readonly HeroSlide[] = [
     description:
       "Experiência dedicada à manutenção especializada e aos trabalhos de usinagem para carabinas PCP.",
     caption: "Manutenção especializada",
-    image: "/images/hero/experiencia.png",
-    imageAlt: "Carabina PCP com mira telescópica apresentada pela Impact Slug",
+    image: "/images/manunteção-pcp.jpeg",
+    imageAlt: "Carabina PCP desmontada sobre a bancada para manutenção especializada",
     imageClassName: "hero-image--history",
   },
   {
